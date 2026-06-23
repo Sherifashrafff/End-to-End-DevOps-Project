@@ -1,0 +1,36 @@
+- name: Initialize Kubernetes cluster
+  shell: kubeadm init --pod-network-cidr=192.168.0.0/16
+  args:
+    creates: /etc/kubernetes/admin.conf
+  register: kubeadm_init
+
+- name: Show kubeadm init output
+  debug:
+    var: kubeadm_init.stdout_lines
+
+- name: Generate worker join command
+  shell: kubeadm token create --print-join-command
+  register: join_cmd
+
+- name: Save join command as fact
+  set_fact:
+    kube_join_command: "{{ join_cmd.stdout }}"
+
+- name: Show join command
+  debug:
+    var: kube_join_command
+
+- name: Save join command to file
+  copy:
+    dest: /tmp/kubeadm_join.sh
+    content: "{{ kube_join_command }}"
+
+- name: Setup kubeconfig for ec2-user
+  shell: |
+    mkdir -p /home/ec2-user/.kube
+    cp /etc/kubernetes/admin.conf /home/ec2-user/.kube/config
+    chown -R ec2-user:ec2-user /home/ec2-user/.kube
+
+- name: Install Calico CNI
+  become_user: ec2-user
+  shell: kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/calico.yaml

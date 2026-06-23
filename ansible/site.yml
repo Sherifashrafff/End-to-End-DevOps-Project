@@ -1,0 +1,20 @@
+---
+- name: Prepare all nodes
+  hosts: all
+  become: yes
+  roles:
+    - prerequisites
+    - containerd
+    - kubernetes_base
+
+- name: Setup Kubernetes control plane
+  hosts: control_node
+  become: yes
+  roles:
+    - controlplane
+
+- name: Join worker nodes
+  hosts: worker_nodes
+  become: yes
+  roles:
+    - worker

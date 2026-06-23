@@ -1,0 +1,8 @@
+    - name: Wait for API server to be reachable
+      wait_for:
+        host: "{{ groups['control_node'][0] }}"
+        port: 6443
+        timeout: 300
+
+    - name: Join Kubernetes cluster
+      shell: "{{ hostvars[groups['control_node'][0]].kube_join_command }}"

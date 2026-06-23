@@ -1,0 +1,22 @@
+    - name: Install containerd
+      yum:
+        name: containerd
+        state: present
+
+    - name: Create containerd config
+      shell: containerd config default > /etc/containerd/config.toml
+      args:
+        creates: /etc/containerd/config.toml
+
+    - name: Enable SystemdCgroup
+      replace:
+        path: /etc/containerd/config.toml
+        regexp: 'SystemdCgroup = false'
+        replace: 'SystemdCgroup = true'
+
+    - name: Enable containerd service
+      systemd:
+        name: containerd
+        enabled: yes
+        state: restarted
+
