@@ -1,0 +1,55 @@
+version: "3.9"
+
+# Local dev stack. Mirrors prod: frontend nginx → backend → postgres (Aurora-compatible).
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB:       taskflow
+      POSTGRES_USER:     taskflow_user
+      POSTGRES_PASSWORD: devpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taskflow_user -d taskflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV:       development
+      PORT:           3000
+      DB_HOST:        postgres
+      DB_PORT:        5432
+      DB_NAME:        taskflow
+      DB_USER:        taskflow_user
+      DB_PASSWORD:    devpassword
+      DB_SSL:         "false"
+      JWT_SECRET:     dev_only_secret_replace_in_prod_min_32_chars
+      JWT_EXPIRES_IN: 7d
+      CORS_ORIGINS:   http://localhost:8080
+    ports:
+      - "3000:3000"   # exposed for direct API testing; in prod only nginx talks to backend
+    # Run migrations then start the server
+    command: sh -c "node -e \"require('dotenv').config()\" && npx knex migrate:latest --knexfile knexfile.js && node server.js"
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    environment:
+      BACKEND_HOST: backend
+      BACKEND_PORT: "3000"
+    ports:
+      - "8080:8080"
+
+volumes:
+  pg_data:

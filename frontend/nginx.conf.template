@@ -1,0 +1,41 @@
+# nginx.conf.template — processed by envsubst at container start.
+# BACKEND_HOST and BACKEND_PORT come from environment variables.
+server {
+    listen 8080;   # Non-root user cannot bind 80; EKS ingress/ALB handles 80→443
+    server_name _;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # ── Reverse-proxy /api/ to the backend service ─────────────────────────────
+    location /api/ {
+        proxy_pass         http://${BACKEND_HOST}:${BACKEND_PORT};
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout 30s;
+    }
+
+    # ── Static files + client-side routing ─────────────────────────────────────
+    location / {
+        try_files $uri $uri/ $uri.html /index.html;
+
+        # Cache assets; no-cache HTML so users always get the latest version
+        location ~* \.(css|js|png|jpg|ico|woff2?)$ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+        }
+    }
+
+    # ── Security headers ────────────────────────────────────────────────────────
+    add_header X-Frame-Options        "SAMEORIGIN"    always;
+    add_header X-Content-Type-Options "nosniff"       always;
+    add_header Referrer-Policy        "strict-origin-when-cross-origin" always;
+
+    # ── Gzip ───────────────────────────────────────────────────────────────────
+    gzip on;
+    gzip_types text/plain text/css application/javascript application/json;
+    gzip_min_length 1024;
+}

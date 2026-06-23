@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaskFlow — Project</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <span class="logo">TaskFlow</span>
+    <button id="back-btn">← Dashboard</button>
+    <button onclick="logout()">Logout</button>
+  </header>
+
+  <main>
+    <section id="project-header">
+      <h2 id="project-name"></h2>
+      <p id="project-desc"></p>
+      <span class="badge" id="project-status"></span>
+    </section>
+
+    <section class="create-section">
+      <h2>Add Task</h2>
+      <p id="error-msg" class="error"></p>
+      <form id="create-task-form">
+        <input id="task-title" type="text" placeholder="Task title" required />
+        <textarea id="task-desc" placeholder="Description (optional)" rows="2"></textarea>
+        <select id="task-priority">
+          <option value="medium">Medium priority</option>
+          <option value="high">High priority</option>
+          <option value="low">Low priority</option>
+        </select>
+        <button type="submit">Add Task</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>Tasks</h2>
+      <div class="filters">
+        <label>Status:
+          <select id="filter-status">
+            <option value="">All</option>
+            <option value="todo">To Do</option>
+            <option value="in_progress">In Progress</option>
+            <option value="done">Done</option>
+          </select>
+        </label>
+        <label>Priority:
+          <select id="filter-priority">
+            <option value="">All</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </label>
+      </div>
+      <div id="task-list" class="card-grid"></div>
+      <div id="pagination" class="pagination"></div>
+    </section>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/project.js"></script>
+</body>
+</html>

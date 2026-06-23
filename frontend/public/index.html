@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TaskFlow</title>
+  <script>
+    // Redirect based on auth state; no flash of content
+    window.location.replace(
+      localStorage.getItem("tf_token") ? "/dashboard.html" : "/login.html"
+    );
+  </script>
+</head>
+<body></body>
+</html>

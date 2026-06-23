@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaskFlow — Dashboard</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <span class="logo">TaskFlow</span>
+    <span>Welcome, <strong id="user-name"></strong></span>
+    <button onclick="logout()">Logout</button>
+  </header>
+
+  <main>
+    <section class="create-section">
+      <h2>New Project</h2>
+      <p id="error-msg" class="error"></p>
+      <form id="create-project-form">
+        <input id="proj-name" type="text" placeholder="Project name" required />
+        <textarea id="proj-desc" placeholder="Description (optional)" rows="2"></textarea>
+        <button type="submit">Create</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>My Projects</h2>
+      <div class="filters">
+        <label>Status:
+          <select id="filter-status">
+            <option value="">All</option>
+            <option value="active">Active</option>
+            <option value="archived">Archived</option>
+          </select>
+        </label>
+      </div>
+      <div id="project-list" class="card-grid"></div>
+      <div id="pagination" class="pagination"></div>
+    </section>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>
