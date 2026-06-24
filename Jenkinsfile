@@ -1,5 +1,5 @@
 pipeline {
-  agent any
+  agent none
 
   options {
     buildDiscarder(logRotator(numToKeepStr: '20'))
@@ -7,15 +7,24 @@ pipeline {
     disableConcurrentBuilds()
   }
 
-    environment {
-        ECR_REGISTRY = '390449413955.dkr.ecr.us-east-1.amazonaws.com'
-        ECR_REPO     = 'taskflow'
-        AWS_REGION   = 'us-east-1'
-    }
+  environment {
+    ECR_REGISTRY   = '390449413955.dkr.ecr.us-east-1.amazonaws.com'
+    ECR_REPO       = 'taskflow'
+    AWS_REGION     = 'us-east-1'
+    IMAGE_TAG      = "${env.BUILD_NUMBER}"
+    BACKEND_IMAGE  = '390449413955.dkr.ecr.us-east-1.amazonaws.com/taskflow-backend'
+    FRONTEND_IMAGE = '390449413955.dkr.ecr.us-east-1.amazonaws.com/taskflow-frontend'
+  }
 
   stages {
 
     stage('Unit Tests') {
+      agent {
+        docker {
+          image 'node:18-alpine'
+          args '-u root'
+        }
+      }
       steps {
         dir('backend') {
           sh 'npm ci'
@@ -24,7 +33,7 @@ pipeline {
       }
       post {
         always {
-          junit 'backend/coverage/junit.xml'
+          junit allowEmptyResults: true, testResults: 'backend/coverage/junit.xml'
         }
       }
     }
@@ -32,6 +41,7 @@ pipeline {
     stage('Build') {
       parallel {
         stage('Build Backend') {
+          agent any
           steps {
             sh '''
               docker build \
@@ -42,6 +52,7 @@ pipeline {
           }
         }
         stage('Build Frontend') {
+          agent any
           steps {
             sh '''
               docker build \
