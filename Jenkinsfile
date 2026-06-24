@@ -1,5 +1,5 @@
 pipeline {
-  agent none
+  agent any
 
   options {
     buildDiscarder(logRotator(numToKeepStr: '20'))
@@ -18,25 +18,23 @@ pipeline {
 
   stages {
 
-    stage('Unit Tests') {
-      agent {
-        docker {
-          image 'node:18-alpine'
-          args '-u root'
-        }
-      }
-      steps {
-        dir('backend') {
-          sh 'npm ci'
-          sh 'npm test -- --ci --coverage'
-        }
-      }
-      post {
-        always {
-          junit allowEmptyResults: true, testResults: 'backend/coverage/junit.xml'
-        }
-      }
+stage('Unit Tests') {
+
+  steps {
+    sh '''
+      docker run --rm -u root \
+        -v "$WORKSPACE/backend":/app \
+        -w /app \
+        node:18-alpine \
+        sh -c "npm ci && npm test -- --ci --coverage"
+    '''
+  }
+  post {
+    always {
+      junit allowEmptyResults: true, testResults: 'backend/coverage/junit.xml'
     }
+  }
+}
 
     stage('Build') {
       parallel {

@@ -20,9 +20,10 @@
     replace: '# \1'
 
 - name: Set SELinux to permissive mode
-  selinux:
-    policy: targeted
-    state: permissive
+  shell: |
+    setenforce 0 || true
+    sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+  changed_when: false
 
 - name: Load overlay and br_netfilter kernel modules
   modprobe:
