@@ -1,0 +1,25 @@
+# Copy this file to terraform.tfvars and fill in the values.
+# terraform.tfvars is git-ignored — never commit secrets.
+
+region   = "us-east-1"
+project  = "taskflow"
+
+# Restrict to your own IP in production: "203.0.113.10/32"
+allowed_ssh_cidr = "0.0.0.0/0"
+
+# ALB
+frontend_nodeport = 30080
+
+# EC2 instances (t3.micro is free-tier eligible)
+bastion_instance_type = "t3.micro"
+jenkins_instance_type = "t3.micro"
+master_instance_type  = "t3.micro"
+worker_instance_type  = "t3.micro"
+worker_count          = 1
+root_volume_size_gb   = 20
+
+# RDS PostgreSQL (db.t3.micro is free-tier eligible, not Aurora)
+db_name           = "taskflow"
+db_username       = "taskflow_user"
+db_instance_class = "db.t3.micro"
+db_engine_version = "15"

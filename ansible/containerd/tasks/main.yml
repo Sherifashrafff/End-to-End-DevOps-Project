@@ -1,22 +1,35 @@
-    - name: Install containerd
-      yum:
-        name: containerd
-        state: present
+---
+- name: Add Docker CE repo (provides containerd.io on Amazon Linux 2)
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docker-ce.repo
+    mode: '0644'
 
-    - name: Create containerd config
-      shell: containerd config default > /etc/containerd/config.toml
-      args:
-        creates: /etc/containerd/config.toml
+- name: Install containerd
+  yum:
+    name: containerd.io
+    state: present
 
-    - name: Enable SystemdCgroup
-      replace:
-        path: /etc/containerd/config.toml
-        regexp: 'SystemdCgroup = false'
-        replace: 'SystemdCgroup = true'
+- name: Create containerd config directory
+  file:
+    path: /etc/containerd
+    state: directory
+    mode: '0755'
 
-    - name: Enable containerd service
-      systemd:
-        name: containerd
-        enabled: yes
-        state: restarted
+- name: Generate default containerd config
+  shell: containerd config default > /etc/containerd/config.toml
+  args:
+    creates: /etc/containerd/config.toml
 
+- name: Enable SystemdCgroup in containerd config
+  replace:
+    path: /etc/containerd/config.toml
+    regexp: 'SystemdCgroup = false'
+    replace: 'SystemdCgroup = true'
+
+- name: Enable and restart containerd
+  systemd:
+    name: containerd
+    enabled: yes
+    state: restarted
+    daemon_reload: yes

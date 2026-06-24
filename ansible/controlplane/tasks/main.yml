@@ -1,3 +1,4 @@
+---
 - name: Initialize Kubernetes cluster
   shell: kubeadm init --pod-network-cidr=192.168.0.0/16
   args:
@@ -8,29 +9,47 @@
   debug:
     var: kubeadm_init.stdout_lines
 
+- name: Create .kube directory for ec2-user
+  file:
+    path: /home/ec2-user/.kube
+    state: directory
+    owner: ec2-user
+    group: ec2-user
+    mode: '0755'
+
+- name: Copy admin kubeconfig for ec2-user
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /home/ec2-user/.kube/config
+    remote_src: yes
+    owner: ec2-user
+    group: ec2-user
+    mode: '0600'
+
+- name: Install Calico CNI
+  become_user: ec2-user
+  command: kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/calico.yaml
+
+- name: Wait for Calico pods to be ready
+  become_user: ec2-user
+  command: kubectl wait --for=condition=ready pod -l k8s-app=calico-node -n kube-system --timeout=120s
+  retries: 3
+  delay: 10
+
 - name: Generate worker join command
-  shell: kubeadm token create --print-join-command
+  command: kubeadm token create --print-join-command
   register: join_cmd
 
-- name: Save join command as fact
+- name: Save join command as host fact
   set_fact:
     kube_join_command: "{{ join_cmd.stdout }}"
+
+- name: Save join command to file on master
+  copy:
+    dest: /tmp/kubeadm_join.sh
+    content: "{{ kube_join_command }}"
+    mode: '0700'
 
 - name: Show join command
   debug:
     var: kube_join_command
-
-- name: Save join command to file
-  copy:
-    dest: /tmp/kubeadm_join.sh
-    content: "{{ kube_join_command }}"
-
-- name: Setup kubeconfig for ec2-user
-  shell: |
-    mkdir -p /home/ec2-user/.kube
-    cp /etc/kubernetes/admin.conf /home/ec2-user/.kube/config
-    chown -R ec2-user:ec2-user /home/ec2-user/.kube
-
-- name: Install Calico CNI
-  become_user: ec2-user
-  shell: kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/calico.yaml
