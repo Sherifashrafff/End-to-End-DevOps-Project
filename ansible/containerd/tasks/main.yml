@@ -1,9 +1,12 @@
 ---
-- name: Add Docker CE repo (provides containerd.io on Amazon Linux 2)
-  get_url:
-    url: https://download.docker.com/linux/centos/docker-ce.repo
-    dest: /etc/yum.repos.d/docker-ce.repo
-    mode: '0644'
+- name: Add Docker CE repo pinned to CentOS 7 (Amazon Linux 2 compatible)
+  yum_repository:
+    name: docker-ce-stable
+    description: Docker CE Stable
+    baseurl: https://download.docker.com/linux/centos/7/x86_64/stable
+    gpgcheck: yes
+    gpgkey: https://download.docker.com/linux/centos/gpg
+    enabled: yes
 
 - name: Install containerd
   yum:
