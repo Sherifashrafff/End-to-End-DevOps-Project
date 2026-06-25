@@ -1,4 +1,9 @@
 ---
+- name: Remove Docker CE repo if present on Amazon Linux 2
+  yum_repository:
+    name: docker-ce-stable
+    state: absent
+
 - name: Install containerd
   yum:
     name: containerd
