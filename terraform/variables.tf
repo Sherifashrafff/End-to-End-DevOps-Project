@@ -41,7 +41,7 @@ variable "jenkins_instance_type" {
 variable "master_instance_type" {
   description = "EC2 instance type for the Kubernetes control plane"
   type        = string
-  default     = "t3.micro"
+  default     = "t3.small"
 }
 
 variable "worker_instance_type" {
