@@ -28,12 +28,16 @@
 
 - name: Install Calico CNI
   become_user: ec2-user
+  environment:
+    KUBECONFIG: /home/ec2-user/.kube/config
   command: kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/calico.yaml
 
 - name: Wait for Calico pods to be ready
   become_user: ec2-user
-  command: kubectl wait --for=condition=ready pod -l k8s-app=calico-node -n kube-system --timeout=120s
-  retries: 3
+  environment:
+    KUBECONFIG: /home/ec2-user/.kube/config
+  command: kubectl wait --for=condition=ready pod -l k8s-app=calico-node -n kube-system --timeout=300s
+  retries: 5
   delay: 10
 
 - name: Generate worker join command
