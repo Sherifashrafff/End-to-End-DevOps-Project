@@ -1,8 +1,19 @@
 ---
-- name: Remove Docker CE repo if present on Amazon Linux 2
+- name: Remove stale Docker CE repo file from any previous run
+  file:
+    path: /etc/yum.repos.d/docker-ce.repo
+    state: absent
+
+- name: Remove Docker CE yum repo entry if present
   yum_repository:
     name: docker-ce-stable
     state: absent
+
+- name: Install container-selinux from AL2 extras repo (required by containerd.io)
+  yum:
+    name: container-selinux
+    state: present
+    enablerepo: extras
 
 - name: Install containerd
   yum:
