@@ -20,7 +20,7 @@ function dbConfig() {
   if (process.env.DATABASE_URL) {
     return {
       connectionString: process.env.DATABASE_URL,
-      ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: true } : false,
+      ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false,
     };
   }
   return {
@@ -29,7 +29,7 @@ function dbConfig() {
     database: process.env.DB_NAME || "taskflow",
     user: process.env.DB_USER || "taskflow_user",
     password: process.env.DB_PASSWORD,
-    ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: true } : false,
+    ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false,
   };
 }
 
